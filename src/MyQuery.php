@@ -50,7 +50,7 @@ class MyQuery{
     }
 
     public function runSql(){
-        if($this->dbase === null){
+        if(Connector::getInstance()->getConnection() === null){
             $this->queryResult = false;
             ErrorHandler::getInstance()->errCompile(__LINE__, __FUNCTION__, 'Could not connect to database',__CLASS__, ["sql"=>$this->sql]);
             return $this;
@@ -126,14 +126,7 @@ class MyQuery{
 
         $dbase = Connector::getInstance()->getConnection();
 
-        if (!$dbase) {
-            ErrorHandler::getInstance()->errCompile(__LINE__, __FUNCTION__, 'Could not connect to database', __CLASS__);
-            $this->numRows = $this->affRows = $this->result = $this->insertID = 0;
-            return false;
-        }
-
         try{
-
             $prev = microtime(true);
                 $query = $dbase->prepare($this->sql);
 
