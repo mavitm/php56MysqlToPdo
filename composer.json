@@ -1,0 +1,14 @@
+{
+    "autoload": {
+        "psr-4": {
+            "MyPdo\\": "src/"
+        },
+        "classmap": [
+            "src/Connector.php",
+            "src/DataWrapper.php",
+            "src/ErrorHandler.php",
+            "src/MyQuery.php"
+        ],
+        "files": ["src/MySqlFunc.php"]
+    }
+}
