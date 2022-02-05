@@ -15,7 +15,10 @@ class Connector{
 
     private $defaultDriver = "mysql";    
 
-    public function __construct(Array $config){
+    public function __construct(){
+    }
+
+    public function setConfig($config){
         //or remove parametrs and read file
         $this->host = $config['host'];
         $this->port = $config['port'];
@@ -23,7 +26,8 @@ class Connector{
         $this->user = $config['user'];
         $this->pass = $config['pass'];
 
-        $this->defaultDriver = $config['driver'];
+        //$this->defaultDriver = $config['driver'];
+        return $this;
     }
 
     private function __clone() {}
@@ -64,13 +68,17 @@ class Connector{
     }
 
     private function connectMysql(){
-        $driver = new \PDO('mysql:host='.$this->host.':'.$this->port.';dbname='.$this->name.'',$this->user,$this->pass,array(PDO::MYSQL_ATTR_INIT_COMMAND =>"SET NAMES utf8"));
+        $driver = new \PDO('mysql:host='.$this->host.':'.$this->port.';dbname='.$this->name.'',$this->user,$this->pass,array(\PDO::MYSQL_ATTR_INIT_COMMAND =>"SET NAMES utf8"));
         $driver->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
         //$driver->setAttribute(PDO::ATTR_TIMEOUT, 5);
         //$driver->setAttribute(PDO::ATTR_AUTOCOMMIT, false);
         //$driver->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
         //$driver->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
         return $driver;
+    }
+
+    public function query(){
+        return MyQuery::getInstance();
     }
 
     public function close(){

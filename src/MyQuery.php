@@ -49,7 +49,7 @@ class MyQuery{
         return $this;
     }
 
-    public function runSql(){
+    public function run(){
         if(Connector::getInstance()->getConnection() === null){
             $this->queryResult = false;
             ErrorHandler::getInstance()->errCompile(__LINE__, __FUNCTION__, 'Could not connect to database',__CLASS__, ["sql"=>$this->sql]);
@@ -58,6 +58,14 @@ class MyQuery{
 
         $this->queryResult = $this->_readFromDbase();
         return $this;
+    }
+
+    public function runSql(){
+        return $this->run();
+    }
+
+    public function execute(){
+        return $this->run();
     }
 
     public function result() {
@@ -91,6 +99,10 @@ class MyQuery{
 
     public function insertID() {
         return $this->insertID;
+    }
+
+    public function numRows() {
+        return $this->numRows;
     }
 
     public function queryCount() {

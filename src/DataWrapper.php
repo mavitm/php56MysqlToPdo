@@ -21,7 +21,7 @@ class DataWrapper
         if(empty($this->data[$this->rowIndex])){
             return false;
         }
-        $row = $this->rowIndex;
+        $row = $this->data[$this->rowIndex];
         $this->rowIndex += 1;
         return $row;
     }
@@ -32,6 +32,7 @@ class DataWrapper
         }else{
             $this->rowIndex = $row_number;
         }
+        return true;
     }
 
     public function __toString()
