@@ -49,14 +49,19 @@ class ErrorHandler{
     }
 
     public function getLastError(){
-        return end($this->err);
+        //return end($this->err);
+        return $this->err[count($this->err) - 1];
     }
 
     public function getLastErrorByClass($class){
         krsort($this->err);
+        $className = $class;
+        if(is_object($class)){
+            $className = get_class($class);
+        }
         $error = [];
         foreach($this->err as $err){
-            if($err['class'] == $class){
+            if($err['class'] == $className){
                 $error = $err;
                 break;
             }

@@ -7,10 +7,18 @@ $connector = \MyPdo\Connector::getInstance();
 $connector->setConfig([
     "host" => "localhost",
     "port" => 3306,
-    "name" => "themes",
+    "name" => "theme",
     "user" => "root",
     "pass" => ""
 ])->connection();
+$connector->selectDb("theme");
+
+############ OR #############
+
+//$connector = my_mysql_connect("localhost", "root", "");
+//my_mysql_select_db("dermedya", $connector);
+
+
 
 ################################################## object query ######################################################
 //

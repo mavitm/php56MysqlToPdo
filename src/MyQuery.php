@@ -6,24 +6,28 @@ class MyQuery{
 
     private static $instance = null;
 
-    private 
-        $sql = null,
-        $sqlArgs = [],
-        $queryResult = null,
-        $queryCount = 0,
-        $queryTime = 0,
-        $queryDate = 0;
+    private
+        $connector      = null,
+        $sql            = null,
+        $sqlArgs        = [],
+        $queryResult    = null,
+        $queryCount     = 0,
+        $queryTime      = 0,
+        $queryDate      = 0;
 
     private 
         $insertID = 0,
         $numRows = 0,
-        $affRows = 0;
+        $affRows = 0,
+        $errorNo = null,
+        $errorMessage = null,
+        $driverErrorCode = null;
 
 
     private $fetch = "arr";  //obj|num|arr
 
     public function __construct(){
-
+        $this->connector = Connector::getInstance()->getConnection();
     }
     
     public static function getInstance() {
@@ -35,6 +39,11 @@ class MyQuery{
 
     public function getFetch(){
         return $this->fetch;
+    }
+
+    public function setConnection($connector){
+        $this->connector = $connector;
+        return $this;
     }
 
     public function setSql($sql){
@@ -50,7 +59,7 @@ class MyQuery{
     }
 
     public function run(){
-        if(Connector::getInstance()->getConnection() === null){
+        if($this->connector->getConnection() === null){
             $this->queryResult = false;
             ErrorHandler::getInstance()->errCompile(__LINE__, __FUNCTION__, 'Could not connect to database',__CLASS__, ["sql"=>$this->sql]);
             return $this;
@@ -113,6 +122,19 @@ class MyQuery{
         return $this->queryTime;
     }
 
+    public function getErrorNo(){
+        return $this->errorNo;
+    }
+
+    public function getErrorMessage(){
+        return $this->errorMessage;
+    }
+
+    public function getDriverErrorCode(){
+        return $this->driverErrorCode;
+    }
+
+
     public function giveInfo() {
         return array(
             'dbase' => array(
@@ -136,7 +158,11 @@ class MyQuery{
 
     private function _readFromDbase() {
 
-        $dbase = Connector::getInstance()->getConnection();
+        $dbase = $this->connector->getConnection();
+
+        // reset
+        $this->numRows = $this->insertID = $this->affRows = 0;
+        $this->errorNo = $this->errorMessage = $this->driverErrorCode = null;
 
         try{
             $prev = microtime(true);
@@ -148,14 +174,23 @@ class MyQuery{
                     $query->execute();
                 }
             $next = microtime(true);
-            $a = $query->errorInfo();
 
-        }catch (\PDOException $e){
+            $a                      = $query->errorInfo();
+            $this->errorNo          = $a[0];
+            $this->driverErrorCode  = $a[1];
+            $this->errorMessage     = $a[2];
+
+        }catch (\PDOException $e){ //https://www.php.net/manual/en/class.pdoexception.php
             $a = array(
                 $e->getLine(),
                 $e->errorInfo,
                 $e->getMessage()
             );
+            if(is_array($e->errorInfo)){
+                $this->errorNo          = $e->errorInfo[0];
+                $this->driverErrorCode  = $e->errorInfo[1];
+                $this->errorMessage     = $e->errorInfo[2];
+            }
         }
 
         // query time
@@ -164,8 +199,6 @@ class MyQuery{
 
         $this->queryCount++;
 
-        // reset
-        $this->numRows = $this->insertID = $this->affRows = 0;
 
         // is fail
         if(!empty($a[1]) || $a[0] != '00000'){
@@ -187,6 +220,10 @@ class MyQuery{
     }
 
     protected function returnFetch(){
+
+        if(empty($this->queryResult)){
+            return $this->queryResult;
+        }
 
         if($this->fetch == "num"){
             return array_map('array_values', $this->queryResult);
